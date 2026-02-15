@@ -79,6 +79,10 @@ graph TD
     prom -. "Scrape Metrics" .-> pod1 & pod4
     grafana --> prom
 ```
+### 3. Diagrama de arquitectura EKS
+
+![Diagrama de Arquitectura EKS](diagrama_eks_amazon_web_demo.png)
+
 ---
 
 ## 🛠️ Tecnologías y Herramientas
