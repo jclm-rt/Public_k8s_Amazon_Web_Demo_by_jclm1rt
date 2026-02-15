@@ -86,19 +86,21 @@ graph TD
 ---
 
 ## 🛠️ Tecnologías y Herramientas
-### Componente,Tecnología,Propósito
-* **Nube**,Amazon EKS (K8s v1.34),Orquestación de contenedores.
-* **IaC**,Python 3 + Boto3,Automatización de infraestructura y permisos IAM.
-* **Ingress**,AWS Load Balancer Controller,Gestión dinámica de ALBs en AWS.
-* **DNS**,ExternalDNS,Sincronización automática con Route53.
-* **Monitoreo**,Prometheus & Grafana,Observabilidad y Dashboards de métricas.
-* **CI/CD**,GitHub Actions,Pipeline con seguridad OIDC y Linting.
+
+| Componente | Tecnología | Propósito |
+| --- | --- | --- |
+| **Nube** | Amazon EKS (K8s v1.34) | Orquestación de contenedores |
+| **IaC** | Python 3 + Boto3 | Automatización de infraestructura y permisos IAM |
+| **Ingress** | AWS Load Balancer Controller | Gestión dinámica de ALBs en AWS |
+| **DNS** | ExternalDNS | Sincronización automática con Route53 |
+| **Monitoreo** | Prometheus & Grafana | Observabilidad y Dashboards de métricas |
+| **CI/CD** | GitHub Actions | Pipeline con seguridad OIDC y Linting |
 
 ---
 
 ## 🚀 Guía de Inicio Rápido
 ### 1. Despliegue de Infraestructura Base
-Ejecuta el script principal para crear el clúster, las políticas IAM y el mapeo de identidad RBAC necesario para el pipeline:
+Ejecuta el script principal para crear el clúster, las políticas IAM y el identity mapping RBAC necesario para el pipeline:
    ```bash
    python3 setup_sdk.py
    ```
