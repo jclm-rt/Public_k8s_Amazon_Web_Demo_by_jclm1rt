@@ -37,3 +37,45 @@ graph LR
     mapping -- "3. Permisos Admin" --> api_server
     gh_actions -- "4. kubectl apply" --> api_server
     gh_actions -- "5. Reporte" --> slack
+
+### 2. Infraestructura de Alta Disponibilidad
+Muestra la distribución de la carga de trabajo. Se implementó Pod Anti-Affinity para forzar la distribución de las 6 réplicas entre diferentes nodos físicos, evitando puntos únicos de fallo.
+
+Fragmento de código
+graph TD
+    user["🌐 Usuario Final"]
+    route53["☁️ Route53 DNS<br/>(juliocesarlapaca.com)"]
+    alb["⚖️ AWS Application<br/>Load Balancer"]
+    acm["🔒 ACM (SSL Cert)"]
+
+    subgraph "EKS Cluster Workload"
+        ingress["🚪 Ingress ALB"]
+        service["🔄 Service (NodePort)"]
+        
+        subgraph "Alta Disponibilidad (Anti-Affinity)"
+            subgraph "Node A (AZ 1)"
+                pod1["📦 Pod 1"]
+                pod2["📦 Pod 2"]
+                pod3["📦 Pod 3"]
+            end
+            subgraph "Node B (AZ 2)"
+                pod4["📦 Pod 4"]
+                pod5["📦 Pod 5"]
+                pod6["📦 Pod 6"]
+            end
+        end
+    end
+
+    subgraph "Monitoring Stack"
+        prom["📈 Prometheus"]
+        grafana["📊 Grafana"]
+    end
+
+    user -- "HTTPS:443" --> route53
+    route53 --> alb
+    alb -- "Terminación SSL" --- acm
+    alb --> ingress
+    ingress --> service
+    service -- "Balanceo HA" --> pod1 & pod2 & pod3 & pod4 & pod5 & pod6
+    prom -. "Scrape Metrics" .-> pod1 & pod4
+    grafana --> prom
