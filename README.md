@@ -9,8 +9,6 @@ Este proyecto es una implementación profesional de **Site Reliability Engineeri
 ### 1. Workflow de Automatización (CI/CD)
 Este flujo describe cómo el código viaja desde el desarrollo hasta el clúster usando **OIDC** para una autenticación segura sin necesidad de llaves de acceso estáticas.
 
-
-
 ```mermaid
 graph LR
     dev["👨‍💻 Desarrollador SRE"]
@@ -37,11 +35,12 @@ graph LR
     mapping -- "3. Permisos Admin" --> api_server
     gh_actions -- "4. kubectl apply" --> api_server
     gh_actions -- "5. Reporte" --> slack
+```
 
 ### 2. Infraestructura de Alta Disponibilidad
 Muestra la distribución de la carga de trabajo. Se implementó Pod Anti-Affinity para forzar la distribución de las 6 réplicas entre diferentes nodos físicos, evitando puntos únicos de fallo.
 
-Fragmento de código
+```mermaid
 graph TD
     user["🌐 Usuario Final"]
     route53["☁️ Route53 DNS<br/>(juliocesarlapaca.com)"]
@@ -79,3 +78,25 @@ graph TD
     service -- "Balanceo HA" --> pod1 & pod2 & pod3 & pod4 & pod5 & pod6
     prom -. "Scrape Metrics" .-> pod1 & pod4
     grafana --> prom
+```
+
+## 🛠️ Tecnologías y Herramientas
+### Componente,Tecnología,Propósito
+* **Nube**,Amazon EKS (K8s v1.34),Orquestación de contenedores.
+* **IaC**,Python 3 + Boto3,Automatización de infraestructura y permisos IAM.
+* **Ingress**,AWS Load Balancer Controller,Gestión dinámica de ALBs en AWS.
+* **DNS**,ExternalDNS,Sincronización automática con Route53.
+* **Monitoreo**,Prometheus & Grafana,Observabilidad y Dashboards de métricas.
+* **CI/CD**,GitHub Actions,Pipeline con seguridad OIDC y Linting.
+
+## 🚀 Guía de Inicio Rápido
+### 1. Despliegue de Infraestructura Base
+Ejecuta el script principal para crear el clúster, las políticas IAM y el mapeo de identidad RBAC necesario para el pipeline:
+   ```bash
+   python3 setup_sdk.py
+   ```
+### 2. Configuración del Stack de Monitoreo
+Instala Prometheus y expón Grafana bajo un subdominio seguro (HTTPS):
+   ```bash
+   python3 setup_monitoring.py
+   ```
