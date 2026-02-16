@@ -1,13 +1,13 @@
 # 🚀 EKS SRE Automation Demo: Amazon Web App
 
-Este proyecto es una implementación profesional de **Site Reliability Engineering (SRE)** diseñada para desplegar una aplicación web escalable y de alta disponibilidad en **Amazon EKS**. Automatiza todo el ciclo de vida: desde el aprovisionamiento de infraestructura con Python hasta el monitoreo proactivo y el CI/CD con seguridad integrada.
+This project is a professional Site Reliability Engineering (SRE) implementation designed to deploy a scalable and highly available web application on Amazon EKS. It automates the entire lifecycle: from infrastructure provisioning with Python to proactive monitoring and CI/CD with integrated security
 
 ---
 
 ## 🏗️ Arquitectura del Sistema
 
-### 1. Workflow de Automatización (CI/CD)
-Este flujo describe cómo el código viaja desde el desarrollo hasta el clúster usando **OIDC** para una autenticación segura sin necesidad de llaves de acceso estáticas.
+### 1. Automation Workflow (CI/CD)
+This flow describes how code travels from development to the cluster using OIDC for secure authentication without the need for static access keys.
 
 ```mermaid
 graph LR
@@ -37,8 +37,8 @@ graph LR
     gh_actions -- "5. Reporte" --> slack
 ```
 
-### 2. Infraestructura de Alta Disponibilidad
-Muestra la distribución de la carga de trabajo. Se implementó Pod Anti-Affinity para forzar la distribución de las 6 réplicas entre diferentes nodos físicos, evitando puntos únicos de fallo.
+### 2. High Availability Infrastructure
+Displays workload distribution. Pod Anti-Affinity was implemented to force the distribution of the 6 replicas across different physical nodes, avoiding single points of failure.
 
 ```mermaid
 graph TD
@@ -85,65 +85,64 @@ graph TD
 
 ---
 
-## 🛠️ Tecnologías y Herramientas
+## 🛠️ Technologies and Tools
 
-| Componente | Tecnología | Propósito |
+| Component | Technology | Purpose |
 | --- | --- | --- |
-| **Nube** | Amazon EKS (K8s v1.34) | Orquestación de contenedores |
-| **IaC** | Python 3 + Boto3 | Automatización de infraestructura y permisos IAM |
-| **Ingress** | AWS Load Balancer Controller | Gestión dinámica de ALBs en AWS |
-| **DNS** | ExternalDNS | Sincronización automática con Route53 |
-| **Monitoreo** | Prometheus & Grafana | Observabilidad y Dashboards de métricas |
-| **CI/CD** | GitHub Actions | Pipeline con seguridad OIDC y Linting |
+| **Cloud** | Amazon EKS (K8s v1.34) | Container orchestation |
+| **IaC** | Python 3 + Boto3 | Infrastructure automation and IAM permissions |
+| **Ingress** | AWS Load Balancer Controller | Dynamic ALB management on AWS |
+| **DNS** | ExternalDNS | Automatic synchronization with Route53 |
+| **Monitoring** | Prometheus & Grafana | Observability and metrics Dashboards |
+| **CI/CD** | GitHub Actions | Pipeline with OIDC security and Linting |
 
 ---
 
-## 🚀 Guía de Inicio Rápido
-### 1. Despliegue de Infraestructura Base
-Ejecuta el script principal para crear el clúster, las políticas IAM y el identity mapping RBAC necesario para el pipeline:
+## 🚀 Quick Start Guide
+### 1. Base Infrastructure Deployment
+Run the main script to create the cluster, IAM policies, and the RBAC identity mapping required for the pipeline:
    ```bash
    python3 setup_sdk.py
    ```
-### 2. Configuración del Stack de Monitoreo
-Instala Prometheus y expón Grafana bajo un subdominio seguro (HTTPS):
+### 2. Monitoring Stack Configuration
+Install Prometheus and expose Grafana under a secure subdomain (HTTPS):
    ```bash
    python3 setup_monitoring.py
    ```
-### 3. Automatización de Despliegue (CI/CD)
-Cada push a main activa el pipeline que valida el manifiesto amazon-generated.yaml, extrae los límites de recursos y realiza el despliegue informando a Slack.
-
-
----
-
-## 📊 Estrategia de Ingeniería de Fiabilidad (SRE)
-* **Resiliencia con Anti-Affinity:** Se configuró una regla de podAntiAffinity para asegurar que las réplicas no compartan el mismo nodo, protegiendo la aplicación ante la caída de un servidor físico.
-
-* **Fine-Tuning de Recursos:** Tras analizar el consumo real (~515Mi RAM y <1m CPU), se definieron reservas estables de 50m CPU y 550Mi RAM para optimizar el coste sin sacrificar estabilidad.
-
-* **Seguridad y Acceso:** Se eliminó el uso de credenciales de larga duración mediante OIDC y se habilitó un escaneo de seguridad (Linting) no bloqueante para auditoría continua.
+### 3. Deployment Automation (CI/CD)
+Every push to main triggers the pipeline that validates the amazon-generated.yaml manifest, extracts resource limits, and performs the deployment while notifying Slack.
 
 ---
 
-## 📖 Glosario Técnico
-* **OIDC (OpenID Connect):** Protocolo para que GitHub Actions asuma roles de AWS de forma temporal y segura.
+## 📊 Site Reliability Engineering (SRE) Strategy
+* **Resilience with Anti-Affinity:** Se configuró una regla de podAntiAffinity para asegurar que las réplicas no compartan el mismo nodo, protegiendo la aplicación ante la caída de un servidor físico.
 
-* **IRSA:** Asignación de permisos de AWS (IAM) directamente a cuentas de servicio de Kubernetes.
+* **Resource Fine-Tuning:** After analyzing real consumption (~515Mi RAM and <1m CPU), stable reservations of 50m CPU and 550Mi RAM were defined to optimize costs without sacrificing stability.
 
-* **Identity Mapping:** Configuración en EKS para otorgar permisos administrativos al rol de GitHub Actions.
+* **Security and Access:** The use of long-lived credentials was eliminated via OIDC, and a non-blocking security scan (Linting) was enabled for continuous auditing.
 
-* **Pod Anti-Affinity:** Regla que distribuye pods en diferentes nodos para alta disponibilidad.
+---
+
+## 📖 Technical Glossary
+* **OIDC (OpenID Connect):** Protocol for GitHub Actions to assume AWS roles temporarily and securely.
+
+* **IRSA:** Assignment of AWS permissions (IAM) directly to Kubernetes Service Accounts.
+
+* **Identity Mapping:** EKS configuration to grant administrative permissions to the GitHub Actions role.
+
+* **Pod Anti-Affinity:** Rule that distributes pods across different nodes for high availability.
 
 ---
  
-## 🔧 Comandos de Operación SRE
+## 🔧 SRE Operational Commands
 ```bash
-# Validar distribución de pods entre nodos (Anti-Affinity Check)
+# Validate pod distribution across nodes (Anti-Affinity Check)
 kubectl get pods -o custom-columns=NAME:.metadata.name,NODE:.spec.nodeName
 
-# Monitorear logs de despliegue
+# Monitor deployment logs
 kubectl rollout status deployment/amazon-deployment
 
-# Verificar estado de registros DNS automáticos
+# Verify automatic DNS record status
 kubectl logs -f deployment/external-dns
 ```
 
