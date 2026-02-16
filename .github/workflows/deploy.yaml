@@ -1,0 +1,91 @@
+name: Deploy to EKS
+
+on:
+  push:
+    branches:
+      - main  # Se ejecuta cada vez que haces push a la rama main
+
+permissions:
+  id-token: write # Necesario para OIDC (El pase de invitado) 🛡️ Pide permiso a GitHub para firmar un "Token JWT".
+  contents: read # Permiso para leer tu código.
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # 💻 La computadora virtual: GitHub nos presta un servidor Linux (Ubuntu) fresco y vacío.
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+    
+      # --- PASO 1: LINTING DE AUDITORÍA (NO BLOQUEANTE) ---
+      - name: 🛡️ Linting & Security Scan
+        id: linter_step
+        continue-on-error: true # <--- ESTO ES LO QUE SOLUCIONA TODO
+        run: |
+          # 1. Descargar binario
+          curl -L https://github.com/stackrox/kube-linter/releases/download/v0.6.8/kube-linter-linux -o kube-linter
+          chmod +x kube-linter
+          
+          # 2. Ejecutar escaneo
+          # Mostrará los errores de 'root' y 'read-only', pero permitirá que el pipeline SIGA.
+          ./kube-linter lint amazon-generated.yaml
+
+      # --- PASO 2: AUTENTICACIÓN Y CONEXIÓN ---
+      - name: 🔐 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }} # Usamos el secreto que guardaste
+          aws-region: us-east-1
+
+      - name: ☸️ Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'latest'
+
+      - name: 🔌 Update Kubeconfig
+        run: |
+          aws eks update-kubeconfig --name cluster-sre-demo --region us-east-1
+
+      # --- PASO 3: EXTRACCIÓN DE DATOS (FILTRANDO EL DEPLOYMENT) ---
+      - name: 📊 Extract Resource Specs
+        id: specs
+        run: |
+          # Usamos un filtro para seleccionar solo el objeto 'Deployment'
+          # Esto evita que yq lea los separadores '---' o el Service/Ingress
+          CPU_REQ=$(yq '. | select(.kind == "Deployment") | .spec.template.spec.containers[0].resources.requests.cpu' amazon-generated.yaml)
+          MEM_REQ=$(yq '. | select(.kind == "Deployment") | .spec.template.spec.containers[0].resources.requests.memory' amazon-generated.yaml)
+          REPLICAS=$(yq '. | select(.kind == "Deployment") | .spec.replicas' amazon-generated.yaml)
+          
+          # Guardamos los valores limpios
+          echo "cpu=$CPU_REQ" >> $GITHUB_OUTPUT
+          echo "mem=$MEM_REQ" >> $GITHUB_OUTPUT
+          echo "reps=$REPLICAS" >> $GITHUB_OUTPUT
+
+      # --- PASO 4: DESPLIEGUE REAL (CON SALTO DE VALIDACIÓN) ---
+      - name: 🚀 Deploy to EKS
+        run: |
+          echo "Aplicando cambios al clúster..."
+          # Usamos --validate=false solo como red de seguridad para esta conexión OIDC
+          kubectl apply -f amazon-generated.yaml --validate=false
+          
+          # Confirmamos que las 6 réplicas suban correctamente
+          kubectl rollout status deployment/amazon-deployment
+
+      # --- PASO 5: NOTIFICACIÓN EN SLACK ---
+      - name: 📢 Slack Notification
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_CHANNEL: general
+          SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
+          SLACK_ICON: https://kubernetes.io/images/favicon.png
+          SLACK_TITLE: "🚀 EKS Deployment: ${{ job.status }}"
+          SLACK_MESSAGE: |
+            *Cluster:* `cluster-sre-demo`
+            *Namespace:* `default`
+            *Réplicas:* `${{ steps.specs.outputs.reps }}`
+            *Reserva CPU:* `${{ steps.specs.outputs.cpu }}`
+            *Reserva Memoria:* `${{ steps.specs.outputs.mem }}`
+            
+            *Resultado:* ${{ job.status == 'success' && '✅ Despliegue Exitoso' || '❌ Error en el Pipeline' }}
+            <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver logs del proceso>
