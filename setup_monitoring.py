@@ -9,10 +9,10 @@ import base64
 # ⚙️ CONFIGURACIÓN
 # ==========================================
 # Reutilizamos tu dominio y certificado
-BASE_DOMAIN = "juliocesarlapaca.com"
+BASE_DOMAIN = "your-domain.com"
 GRAFANA_DOMAIN = f"grafana.{BASE_DOMAIN}"
 # Pega aquí TU ARN de certificado (el mismo de setup_sdk.py)
-CERT_ARN = "arn:aws:acm:us-east-1:625756903561:certificate/7d3e39ec-99b3-45f4-b8cb-7681e3462a70"
+CERT_ARN = "arn:aws:acm:us-east-1:AWS_ACCOUNT_ID:certificate/7d3e39ec-99b3-45f4-b8cb-7681e3462a70"
 
 class Colors:
     BLUE = '\033[94m'

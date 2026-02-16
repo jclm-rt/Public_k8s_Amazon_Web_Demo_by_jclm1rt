@@ -112,6 +112,12 @@ Install Prometheus and expose Grafana under a secure subdomain (HTTPS):
 ### 3. Deployment Automation (CI/CD)
 Every push to main triggers the pipeline that validates the amazon-generated.yaml manifest, extracts resource limits, and performs the deployment while notifying Slack.
 
+### 4. Cluster and monitoring stack deletion
+Run the following script to delete the monitoring stack and the cluster simultaneously.
+   ```bash
+   python3 clean_sdk_all.py
+   ```
+
 ---
 
 ## 📊 Site Reliability Engineering (SRE) Strategy

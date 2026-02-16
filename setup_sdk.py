@@ -11,9 +11,9 @@ import os
 # ==========================================
 CLUSTER_NAME = "cluster-sre-demo"
 REGION = "us-east-1"
-DOMAIN_NAME = "amazon-web-demo.juliocesarlapaca.com" # Tu dominio
-# Pega aquí tu ARN del certificado (Lo tomé de tus logs anteriores)
-CERT_ARN = "arn:aws:acm:us-east-1:625756903561:certificate/7d3e39ec-99b3-45f4-b8cb-7681e3462a70"
+DOMAIN_NAME = "amazon-web-demo.your-domain.com" # Tu dominio
+# Pega aquí tu ARN del certificado
+CERT_ARN = "arn:aws:acm:us-east-1:AWS_ACCOUNT_ID:certificate/7d3e39ec-99b3-45f4-b8cb-7681e3462a70"
 
 # Versiones
 K8S_VERSION = "1.34"
@@ -274,7 +274,7 @@ def main():
       --set provider=aws \
       --set aws.zoneType=public \
       --set txtOwnerId={CLUSTER_NAME} \
-      --set domainFilters[0]=juliocesarlapaca.com \
+      --set domainFilters[0]=your-domain.com \
       --set serviceAccount.create=false \
       --set serviceAccount.name=external-dns \
       --set image.registry=public.ecr.aws \
