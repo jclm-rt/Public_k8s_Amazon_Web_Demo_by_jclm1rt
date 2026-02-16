@@ -81,7 +81,7 @@ graph TD
 ```
 ### 3. Diagrama de arquitectura EKS
 
-![Diagrama de Arquitectura EKS](diagrama_eks_amazon_web_demo.png)
+![Diagrama de Arquitectura EKS](UnifiedAwsEksSreAutomationArchitecture.png)
 
 ---
 
